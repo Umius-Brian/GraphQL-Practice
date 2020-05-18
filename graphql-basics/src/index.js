@@ -1,11 +1,33 @@
 import { GraphQLServer } from 'graphql-yoga'
 
-// Type definitions for API
+// Type definitions for API, schemas
 // 5 scalar types (stores single value): String, Boolean, Int, Float, ID
+// Any relationships must be set up in typeDefs
+
+const users = [{
+  id: '1',
+  name: 'Brian',
+  email: 'asdf@email.com',
+  age: 30
+}, {
+  id: '2',
+  name: 'Christy',
+  email: 'huh@email.com',
+  age: 27
+}]
+
+const posts = [{
+  id: '10',
+  title: `Ender's Game`,
+  body: 'This is how to GraphQL',
+  published: true,
+  author: '1',
+}]
 
 const typeDefs = `
   type Query {
     users(query: String): [User!]!
+    posts(query: String): [Post!]!
     me: User!
     post: Post!
   }  
@@ -22,20 +44,10 @@ const typeDefs = `
     title: String!
     body: String!
     published: Boolean!
+    author: User!
   }
 `
 
-const users = [{
-  id: '1',
-  name: 'Brian',
-  email: 'asdf@email.com',
-  age: 30
-}, {
-  id: '2',
-  name: 'Christy',
-  email: 'huh@email.com',
-  age: 27
-}]
 
 // Resolvers
 const resolvers = {
@@ -58,13 +70,23 @@ const resolvers = {
       }
     },
 
-    post() {
-      return {
-        id: '234',
-        title: 'Post Title',
-        body: 'Post message',
-        published: true
+    posts(parent, args, ctx, info) {
+      if(!args.query) {
+        return posts
       }
+      return posts.filter((post) => {
+        const isTitleMatch = post.title.toLowerCase().includes(args.query.toLowerCase());
+        const isBodyMatch = post.body.toLowerCase().includes(args.query.toLowerCase());
+        return isTitleMatch || isBodyMatch
+      })
+    }
+  },
+
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author    // parent = Post object
+      })
     }
   }
 }
