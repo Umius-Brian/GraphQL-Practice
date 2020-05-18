@@ -5,9 +5,7 @@ import { GraphQLServer } from 'graphql-yoga'
 
 const typeDefs = `
   type Query {
-    greeting(name: String): String!
-    add(numbers:[Float!]!): Float!
-    grades: [Int!]!
+    users(query: String): [User!]!
     me: User!
     post: Post!
   }  
@@ -27,26 +25,30 @@ const typeDefs = `
   }
 `
 
+const users = [{
+  id: '1',
+  name: 'Brian',
+  email: 'asdf@email.com',
+  age: 30
+}, {
+  id: '2',
+  name: 'Christy',
+  email: 'huh@email.com',
+  age: 27
+}]
+
 // Resolvers
 const resolvers = {
   Query: {
-    greeting(parent, args, ctx, info) {
-      if (args.name) {
-        return `Hello, ${args.name}`
-      } 
-      return 'Hello'
-    },
-    add(parent, args, ctx, info) {
-      if (args.numbers.length === 0) {
-        return 0
+    users(parent, args, ctx, info) {
+      if (!args.query) {
+        return users
       }
-      return args.numbers.reduce((a, b) => {
-        return a + b
+      return users.filter((user) => {
+        return user.name.toLowerCase().includes(args.query.toLowerCase())
       })
     },
-    grades(parent, args, ctx, info) {
-      return [99, 98, 97]
-    },
+
     me() {
       return {
         id: '123',
@@ -55,6 +57,7 @@ const resolvers = {
         age: 27
       }
     },
+
     post() {
       return {
         id: '234',
