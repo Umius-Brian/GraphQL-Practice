@@ -24,10 +24,33 @@ const posts = [{
   author: '1',
 }]
 
+const comments = [{
+  id: '100',
+  text: 'First',
+  author: '1',
+  post: '10'
+}, {
+  id: '200',
+  text: 'Second',
+  author: '2',
+  post: '10'
+}, {
+  id: '300',
+  text: 'Third',
+  author: '1',
+  post: '10'
+}, {
+  id: '400',
+  text: 'Fourth',
+  author: '1',
+  post: '10'
+}]
+
 const typeDefs = `
   type Query {
     users(query: String): [User!]!
     posts(query: String): [Post!]!
+    comments:[Comment!]!
     me: User!
     post: Post!
   }  
@@ -37,6 +60,8 @@ const typeDefs = `
     name: String!
     email: String!
     age: Int
+    posts: [Post!]!
+    comments: [Comment!]!
   }
 
   type Post {
@@ -45,6 +70,14 @@ const typeDefs = `
     body: String!
     published: Boolean!
     author: User!
+    comment: [Comment!]!
+  }
+
+  type Comment {
+    id: ID!
+    text: String!
+    author: User!
+    post: Post!
   }
 `
 
@@ -59,6 +92,10 @@ const resolvers = {
       return users.filter((user) => {
         return user.name.toLowerCase().includes(args.query.toLowerCase())
       })
+    },
+
+    comments(parent, args, ctx, info) {
+      return comments
     },
 
     me() {
@@ -86,6 +123,38 @@ const resolvers = {
     author(parent, args, ctx, info) {
       return users.find((user) => {
         return user.id === parent.author    // parent = Post object
+      })
+    },
+    comment(parent, args, ctx, info) {
+      return comments.find((comment) => {
+        return comment.post === parent.id
+      })
+    }
+  },
+
+  User: {
+    posts(parent, args, ctx, info) {
+      return posts.filter((post) => {
+        return post.author === parent.id
+      })
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter((comment) => {
+        return comment.author = parent.id
+      })
+    }
+  },
+
+  Comment: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author
+      })
+    },
+
+    post(parent, args, ctx, info) {
+      return posts.find((post) => {
+        return post.id === parent.post
       })
     }
   }
